@@ -21,6 +21,21 @@ def main():
     while True:
 
         try:
+            property_or_type = input("Colour by property or type? Type p for property, t for type or type exit to quit: ")
+            if property_or_type == "exit":
+                return
+            if not (property_or_type == "p" or property_or_type == "t"):
+                raise Exception
+            break
+        except:
+            print("Please type p, t, or exit")
+            pass
+
+    print(property_or_type)
+
+    while True:
+
+        try:
             pset = input("Please enter Pset name (example: Pset_WallCommon) or type exit to quit: ")
             if pset == "exit":
                 return
@@ -102,7 +117,6 @@ class Element:
     def __init__(self, element, property):
         self.element = element
         self.property = property
-
 
 if __name__ == "__main__":
     main()
