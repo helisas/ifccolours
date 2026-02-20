@@ -91,6 +91,7 @@ def main():
         for e in elements_with_types:
             grouped[e.object_type].append(e)
 
+
     for key, group in grouped.items():
                 
         r = random.random()
@@ -104,7 +105,6 @@ def main():
                 "SurfaceColour": { "Name": None, "Red": r, "Green": g, "Blue": b }
             })
         for e in group:
-
             representation = ifcopenshell.util.representation.get_representation(e.element, context="Model", subcontext="Body")
             ifcopenshell.api.style.assign_item_style(model, style=style, item=representation.Items[0])
             
