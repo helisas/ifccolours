@@ -10,7 +10,7 @@ def main():
 
         try:
             input_file = input("Please enter IFC file path or type exit to quit: ")
-            if input_file == "exit":
+            if input_file.lower() == "exit":
                 return
             model = ifcopenshell.open(input_file)
             break
@@ -21,10 +21,10 @@ def main():
     while True:
 
         try:
-            property_or_type = input("Colour by property or type? Type p for property, t for type or type exit to quit: ")
+            property_or_type = input("Colour by property, category or type? Type p for property, c for category or t for type or type exit to quit: ").lower()
             if property_or_type == "exit":
                 return
-            if not (property_or_type == "p" or property_or_type == "t"):
+            if not (property_or_type == "p" or property_or_type == "c" or property_or_type == "t"):
                 raise Exception
             break
         except:
@@ -37,7 +37,7 @@ def main():
 
             try:
                 pset = input("Please enter Pset name (example: Pset_WallCommon) or type exit to quit: ")
-                if pset == "exit":
+                if pset.lower() == "exit":
                     return
                 if check_pset_exists(model, pset) == False:
                     raise Exception
@@ -50,7 +50,7 @@ def main():
 
             try:
                 property = input("Please enter property name (example: FireRating) or type exit to quit: ")
-                if property == "exit":
+                if property.lower() == "exit":
                     return
                 elements = ifcopenshell.util.selector.filter_elements(model, f"IfcElement, {pset}.{property} != NULL")
                 if not elements:
@@ -68,9 +68,21 @@ def main():
         for e in elements_with_properties:
             grouped[e.property].append(e)
 
+    
+    elif property_or_type == "c":
+
+        elements = get_all_physical_elements_in_the_model(model)
+
+        elements_with_categories = [Element(element, category=element.is_a()) for element in elements]
+        
+        grouped = defaultdict(list)
+
+        for e in elements_with_categories:
+            grouped[e.category].append(e)
+
     else:
 
-        elements = ifcopenshell.util.selector.filter_elements(model, "IfcElement")
+        elements = get_all_physical_elements_in_the_model(model)
 
         elements_with_types = [Element(element, object_type=ifcopenshell.util.element.get_type(element)) for element in elements]
         
@@ -97,15 +109,18 @@ def main():
             ifcopenshell.api.style.assign_item_style(model, style=style, item=representation.Items[0])
             
     new_file_name = get_available_filename(input_file)
+    print("Colouring...")
     model.write(new_file_name)
+    print("File coloured successfully. It's saved in the same folder as original file.")
 
 
 class Element:
 
-    def __init__(self, element, property=None, object_type=None):
+    def __init__(self, element, property=None, object_type=None, category=None):
         self.element = element
         self.property = property
         self.object_type = object_type
+        self.category = category
 
 
 def check_pset_exists(ifc_file, pset_name):
@@ -117,6 +132,11 @@ def check_pset_exists(ifc_file, pset_name):
             return True
 
     return False
+
+def get_all_physical_elements_in_the_model(model):
+
+    elements = ifcopenshell.util.selector.filter_elements(model, "IfcElement")
+    return elements
 
 def get_available_filename(file_path):
     
